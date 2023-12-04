@@ -1,0 +1,71 @@
+﻿@page "/"
+
+<PageTitle>Validador de Cédula</PageTitle>
+
+<h1 class="text-primary">Validador de Cédula</h1>
+
+<EditForm Enhance FormName="form-cedula"
+           Model="@Model" method="post"
+           OnValidSubmit="ValidateCedula">
+   <DataAnnotationsValidator />
+   <StatusMessage Message="@errorMessage" />
+   <div class="py-2">
+     <div class="form-group mb-2">
+       <label for="cedula">Cédula</label>
+       <InputText class="form-control" @bind-Value="Model.Cedula" />
+       <ValidationMessage For="() => Model.Cedula" class="text-danger" />
+     </div>
+
+     <button type="submit" class="btn btn-success">
+       Validar
+     </button>
+   </div>
+ </EditForm>
+
+ @code {
+  private string? errorMessage;
+
+  [SupplyParameterFromForm]
+  public CedulaRequestDto Model { get; set; } = new();
+
+  private static bool ValidarCedulaEcuatoriana(string cedula)
+  {
+    if (cedula.Length != 10)
+    {
+      return false;
+    }
+
+    int suma = 0;
+    int digito;
+
+    for (int i = 0; i < 9; i++)
+    {
+      digito = Convert.ToInt32(cedula[i].ToString());
+
+      if (i % 2 == 0)
+      {
+        digito = digito * 2;
+        if (digito > 9)
+        {
+          digito = digito - 9;
+        }
+      }
+
+      suma += digito;
+    }
+
+    int ultimoDigito = Convert.ToInt32(cedula[9].ToString());
+    int digitoVerificador = suma % 10 == 0 ? 0 : 10 - suma % 10;
+
+    return ultimoDigito == digitoVerificador;
+  }
+
+  private void ValidateCedula()
+  {
+    if (!ValidarCedulaEcuatoriana(Model.Cedula))
+    {
+      errorMessage = "Error: La Cédula no es válida";
+      return;
+    }
+  }
+}
