@@ -1,0 +1,21 @@
+@startuml Context
+!include  https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(usuario, "Usuario", "Usa la aplicación para consultar información.")
+System_Boundary(sistema, "Sistema de Consulta") {
+    System_Ext(sri, "SRI", "Sistema de Rentas Internas.")
+    System_Ext(ant, "ANT", "Agencia Nacional de Tránsito.")
+    System(clienteBlazor, "Cliente Blazor", "Interfaz de usuario para ingresar la cédula y mostrar resultados.")
+    System_Ext(servicioCedula, "Microservicio Datos Cédula", "Obtiene datos de la cédula.")
+    System_Ext(servicioRuc, "Microservicio Datos RUC", "Verifica contribuyente en SRI.")
+    System_Ext(servicioLicencia, "Microservicio Datos Licencia", "Verifica puntos en la licencia.")
+}
+
+Rel(usuario, clienteBlazor, "Ingresa cédula")
+Rel(clienteBlazor, servicioCedula, "Consulta datos de cédula")
+Rel(clienteBlazor, servicioRuc, "Consulta datos de RUC en SRI")
+Rel(clienteBlazor, servicioLicencia, "Consulta puntos de licencia en ANT")
+Rel(servicioCedula, clienteBlazor, "Envía datos de cédula")
+Rel(servicioRuc, clienteBlazor, "Envía verificación de RUC")
+Rel(servicioLicencia, clienteBlazor, "Envía puntos de licencia")
+@enduml

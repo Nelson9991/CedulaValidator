@@ -1,0 +1,16 @@
+@startuml Contenedores
+!include  https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(usuario, "Usuario", "Usa la aplicación para consultar información.")
+Container_Boundary(sistema, "Sistema de Consulta") {
+    Container(clienteBlazor, "Cliente Blazor", "Blazor", "Interfaz de usuario para ingresar la cédula y mostrar resultados.")
+    Container(servicioCedula, "Microservicio Datos Cédula", "API REST", "Obtiene datos de la cédula.")
+    Container(servicioRuc, "Microservicio Datos RUC", "API REST", "Verifica contribuyente en SRI.")
+    Container(servicioLicencia, "Microservicio Datos Licencia", "API REST", "Verifica puntos en la licencia.")
+}
+
+Rel(usuario, clienteBlazor, "Usa")
+Rel(clienteBlazor, servicioCedula, "Consulta")
+Rel(clienteBlazor, servicioRuc, "Consulta")
