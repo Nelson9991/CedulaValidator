@@ -1,4 +1,5 @@
-﻿using CedulaValidator.Service.Cedula;
+﻿using System.Text.Json;
+using CedulaValidator.Service.Cedula;
 using CedulaValidator.Shared.Dtos;
 
 namespace CedulaValidator.Service.Ruc.Endpoints;
@@ -17,11 +18,10 @@ public static class RucEndpoints
   private static async Task<IResult> ValidateRuc(string ruc, IHttpClientFactory clientFactory)
   {
     using var http = clientFactory.CreateClient(AppConstants.RUC_HTTP_CLIENT);
-    var rucResp = await http.GetFromJsonAsync<RucResponseDto>($"{ruc}");
+    var rucResp = await http.GetStringAsync($"{ruc}");
 
-    if (rucResp is null)
-      return TypedResults.NotFound("No se encontró el RUC solicitado");
-
-    return TypedResults.Ok(rucResp);
+    return rucResp.Contains("error")
+    ? TypedResults.NotFound(JsonSerializer.Deserialize<ErrorResponseDto>(rucResp))
+    : TypedResults.Ok(JsonSerializer.Deserialize<RucResponseDto>(rucResp));
   }
 }

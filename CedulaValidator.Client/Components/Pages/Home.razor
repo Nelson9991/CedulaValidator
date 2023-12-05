@@ -1,31 +1,67 @@
 ﻿@page "/"
+ @rendermode InteractiveServer
+
+@inject IHttpClientFactory HttpClientFactory
 
 <PageTitle>Validador de Cédula</PageTitle>
 
 <h1 class="text-primary">Validador de Cédula</h1>
 
-<EditForm Enhance FormName="form-cedula"
-           Model="@Model" method="post"
-           OnValidSubmit="ValidateCedula">
-   <DataAnnotationsValidator />
-   <StatusMessage Message="@errorMessage" />
-   <div class="py-2">
-     <div class="form-group mb-2">
-       <label for="cedula">Cédula</label>
-       <InputText class="form-control" @bind-Value="Model.Cedula" />
-       <ValidationMessage For="() => Model.Cedula" class="text-danger" />
-     </div>
+<EditForm FormName="form-cedula"
+          Model="@Model" method="post"
+          OnValidSubmit="ValidateCedula">
+  <DataAnnotationsValidator />
+  <StatusMessage Message="@errorMessage" />
+  <div class="py-2">
+    <div class="form-group mb-2">
+      <label for="cedula">Cédula</label>
+      <InputText class="form-control" @bind-Value="Model.Cedula" />
+      <ValidationMessage For="() => Model.Cedula" class="text-danger" />
+    </div>
 
-     <button type="submit" class="btn btn-success">
-       Validar
-     </button>
-   </div>
- </EditForm>
+    <button type="submit" class="btn btn-success">
+      Validar
+    </button>
+  </div>
+</EditForm>
 
- @code {
+@if (cedulaResponse is not null)
+{
+  <div class="row my-2">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Nombre Completo</th>
+          <th>Identificación</th>
+          <th>RUC</th>
+          <th>Razón Social</th>
+          <th>Estado Contribuyente</th>
+          <th>Tipo Contribuyente</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>@cedulaResponse.Data!.Response.NombreCompleto</td>
+          <td>@cedulaResponse.Data!.Response.Identificacion</td>
+          <td>@rucResponse!.Data!.Main[0].NumeroRuc</td>
+          <td>@rucResponse!.Data!.Main[0].RazonSocial</td>
+          <td>@rucResponse!.Data!.Main[0].EstadoContribuyenteRuc</td>
+          <td>@rucResponse!.Data!.Main[0].TipoContribuyente</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <a class="nav-link" target="_blank" href=@($"https://localhost:7152/api/licencia/consultar?Cedula={@cedulaResponse.Data!.Response.Identificacion}&Matricula=T")>
+    Consultar Estado Licencia
+  </a>
+}
+
+@code {
   private string? errorMessage;
+  private CedulaResponseDto? cedulaResponse;
+  private RucResponseDto? rucResponse;
 
-  [SupplyParameterFromForm]
   public CedulaRequestDto Model { get; set; } = new();
 
   private static bool ValidarCedulaEcuatoriana(string cedula)
@@ -60,12 +96,32 @@
     return ultimoDigito == digitoVerificador;
   }
 
-  private void ValidateCedula()
+  private async void ValidateCedula()
   {
     if (!ValidarCedulaEcuatoriana(Model.Cedula))
     {
       errorMessage = "Error: La Cédula no es válida";
       return;
     }
+
+    using var cedulaClient = HttpClientFactory.CreateClient(AppConstants.CEDULA_SERVICE_CLIENT);
+    using var rucClient = HttpClientFactory.CreateClient(AppConstants.RUC_SERVICE_CLIENT);
+
+    cedulaResponse = await cedulaClient.GetFromJsonAsync<CedulaResponseDto>($"/{Model.Cedula}");
+    rucResponse = await rucClient.GetFromJsonAsync<RucResponseDto>($"/{Model.Cedula}001");
+
+    if (cedulaResponse is null)
+    {
+      errorMessage = "Error: No se pudo obtener la información de la Cédula";
+      return;
+    }
+
+    if (rucResponse is null)
+    {
+      errorMessage = "Error: No se pudo obtener la información del RUC";
+      return;
+    }
+
+    errorMessage = null;
   }
 }

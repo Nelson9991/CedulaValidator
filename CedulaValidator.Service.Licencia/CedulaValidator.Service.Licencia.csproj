@@ -14,8 +14,4 @@
 		<ProjectReference Include="..\CedulaValidator.Shared\CedulaValidator.Shared.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Endpoints\" />
-	</ItemGroup>
-
 </Project>

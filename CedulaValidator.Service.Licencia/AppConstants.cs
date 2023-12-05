@@ -2,5 +2,5 @@
 
 public static class AppConstants
 {
-  public const string CEDULA_HTTP_CLIENT = "CedulaHttpClient";
+  public const string LICENCIA_HTTP_CLIENT = "LicenciaHttpClient";
 }

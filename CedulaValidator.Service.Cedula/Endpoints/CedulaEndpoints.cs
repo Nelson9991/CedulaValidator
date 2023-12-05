@@ -1,4 +1,5 @@
-﻿using CedulaValidator.Shared.Dtos;
+﻿using System.Text.Json;
+using CedulaValidator.Shared.Dtos;
 
 namespace CedulaValidator.Service.Cedula.Endpoints;
 
@@ -16,11 +17,10 @@ public static class CedulaEndpoints
   private static async Task<IResult> ValidateCedula(string cedula, IHttpClientFactory clientFactory)
   {
     using var http = clientFactory.CreateClient(AppConstants.CEDULA_HTTP_CLIENT);
-    var cedulaResp = await http.GetFromJsonAsync<CedulaResponseDto>($"{cedula}");
+    var cedulaResp = await http.GetStringAsync($"{cedula}");
 
-    if (cedulaResp is null)
-      return TypedResults.NotFound("No se encontró la cédula solicitada");
-
-    return TypedResults.Ok(cedulaResp);
+    return cedulaResp.Contains("error")
+       ? TypedResults.BadRequest(JsonSerializer.Deserialize<ErrorResponseDto>(cedulaResp))
+       : TypedResults.Ok(JsonSerializer.Deserialize<CedulaResponseDto>(cedulaResp));
   }
 }
