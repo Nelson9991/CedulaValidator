@@ -1,8 +1,15 @@
 ﻿@if (!string.IsNullOrEmpty(Message))
 {
-  var statusMessageClass = Message.StartsWith("Error") ? "danger" : "success";
-  <div class="alert alert-@statusMessageClass" role="alert">
-    @Message
+  var statusMessageClass = Message switch
+  {
+    var message when message.StartsWith("Error") => "danger",
+    var message when message.StartsWith("Warning") => "warning",
+    var message when message.StartsWith("Success") => "success",
+    _ => "primary"
+  };
+  <div class="alert alert-@statusMessageClass alert-dismissible fade show" role="alert">
+    <strong>@Message</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
 }
 

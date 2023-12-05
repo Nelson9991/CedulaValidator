@@ -9,3 +9,21 @@
 ## Diagrama C4 de Contenedores
 
 ![Diagrama C4 de Contenedores](./outs/docs/diagrama-contenedores/Contenedores.png)
+
+## Funcionamiento de la App
+
+### Consulta de Cedula y RUC
+
+![Consulta de Cedula y RUC](./outs/imgs/cedulayruc.png)
+
+### Consulta de Cedula y RUC no válido
+
+![Consulta de Cedula y RUC](./outs/imgs/cedulasinruc.png)
+
+### Error Cuando la Cédula no es válida
+
+![Error Cedula](./outs/imgs/error.png)
+
+### Consulta de Licencia según la cedula
+
+![Error Cedula](./outs/imgs/licencia.png)

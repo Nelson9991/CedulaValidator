@@ -3,6 +3,15 @@ using CedulaValidator.Service.Cedula;
 using CedulaValidator.Service.Cedula.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowAll", builder =>
+  {
+    builder.AllowAnyOrigin()
+      .AllowAnyMethod()
+      .AllowAnyHeader();
+  });
+});
 
 builder.Services.AddHttpClient(AppConstants.CEDULA_HTTP_CLIENT, client =>
 {
@@ -12,6 +21,10 @@ builder.Services.AddHttpClient(AppConstants.CEDULA_HTTP_CLIENT, client =>
 });
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.AddCedulaEndpoints();
 

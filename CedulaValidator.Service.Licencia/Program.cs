@@ -3,6 +3,16 @@ using CedulaValidator.Service.Licencia.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowAll", builder =>
+  {
+    builder.AllowAnyOrigin()
+      .AllowAnyMethod()
+      .AllowAnyHeader();
+  });
+});
+
 builder.Services.AddHttpClient(AppConstants.LICENCIA_HTTP_CLIENT, client =>
 {
   client.BaseAddress = new Uri("https://consultaweb.ant.gob.ec/PortalWEB/paginas/clientes/");
@@ -13,6 +23,10 @@ builder.Services.AddHttpClient(AppConstants.LICENCIA_HTTP_CLIENT, client =>
 });
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.AddLicenciaEndpoints();
 

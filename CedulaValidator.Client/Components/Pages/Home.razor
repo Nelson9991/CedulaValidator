@@ -1,5 +1,5 @@
 ﻿@page "/"
- @rendermode InteractiveServer
+@rendermode InteractiveServer
 
 @inject IHttpClientFactory HttpClientFactory
 
@@ -19,8 +19,9 @@
       <ValidationMessage For="() => Model.Cedula" class="text-danger" />
     </div>
 
-    <button type="submit" class="btn btn-success">
-      Validar
+    <button type="submit" class="btn btn-success"
+            disabled="@isBusy">
+      @(isBusy ? "Cargando..." : "Validar")
     </button>
   </div>
 </EditForm>
@@ -43,16 +44,16 @@
         <tr>
           <td>@cedulaResponse.Data!.Response.NombreCompleto</td>
           <td>@cedulaResponse.Data!.Response.Identificacion</td>
-          <td>@rucResponse!.Data!.Main[0].NumeroRuc</td>
-          <td>@rucResponse!.Data!.Main[0].RazonSocial</td>
-          <td>@rucResponse!.Data!.Main[0].EstadoContribuyenteRuc</td>
-          <td>@rucResponse!.Data!.Main[0].TipoContribuyente</td>
+          <td>@(rucResponse?.Data?.Main[0].NumeroRuc ?? "N/A")</td>
+          <td>@(rucResponse?.Data?.Main[0].RazonSocial ?? "N/A")</td>
+          <td>@(rucResponse?.Data?.Main[0].EstadoContribuyenteRuc ?? "N/A")</td>
+          <td>@(rucResponse?.Data?.Main[0].TipoContribuyente ?? "N/A")</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <a class="nav-link" target="_blank" href=@($"https://localhost:7152/api/licencia/consultar?Cedula={@cedulaResponse.Data!.Response.Identificacion}&Matricula=T")>
+  <a class="btn btn-outline-dark" target="_blank" href=@($"https://localhost:7152/api/licencia/consultar?Cedula={@cedulaResponse.Data!.Response.Identificacion}&Matricula=T")>
     Consultar Estado Licencia
   </a>
 }
@@ -61,6 +62,7 @@
   private string? errorMessage;
   private CedulaResponseDto? cedulaResponse;
   private RucResponseDto? rucResponse;
+  private bool isBusy;
 
   public CedulaRequestDto Model { get; set; } = new();
 
@@ -98,30 +100,50 @@
 
   private async void ValidateCedula()
   {
-    if (!ValidarCedulaEcuatoriana(Model.Cedula))
+    try
     {
-      errorMessage = "Error: La Cédula no es válida";
-      return;
+      errorMessage = string.Empty;
+
+      isBusy = true;
+      if (!ValidarCedulaEcuatoriana(Model.Cedula))
+      {
+        errorMessage = "Error: La Cédula no es válida";
+        isBusy = false;
+        return;
+      }
+
+      using var cedulaClient = HttpClientFactory.CreateClient(AppConstants.CEDULA_SERVICE_CLIENT);
+      using var rucClient = HttpClientFactory.CreateClient(AppConstants.RUC_SERVICE_CLIENT);
+
+      var cedResp = await cedulaClient.GetAsync($"{Model.Cedula}");
+      var rucResp = await rucClient.GetAsync($"{Model.Cedula}001");
+
+      if (!cedResp.IsSuccessStatusCode)
+      {
+        var errorResponse = await cedResp.Content.ReadFromJsonAsync<ErrorResponseDto>();
+        errorMessage = $"Error: {errorResponse!.Data!.Error}";
+        isBusy = false;
+        StateHasChanged();
+        return;
+      }
+
+      if (!rucResp.IsSuccessStatusCode)
+      {
+        var errorResponse = await rucResp.Content.ReadFromJsonAsync<ErrorResponseDto>();
+        errorMessage = $"Warning: {errorResponse?.Data?.Error ?? ""}";
+      }
+      else
+      {
+        rucResponse = await rucResp.Content.ReadFromJsonAsync<RucResponseDto>();
+      }
+
+      cedulaResponse = await cedResp.Content.ReadFromJsonAsync<CedulaResponseDto>();
+      isBusy = false;
+      StateHasChanged();
     }
-
-    using var cedulaClient = HttpClientFactory.CreateClient(AppConstants.CEDULA_SERVICE_CLIENT);
-    using var rucClient = HttpClientFactory.CreateClient(AppConstants.RUC_SERVICE_CLIENT);
-
-    cedulaResponse = await cedulaClient.GetFromJsonAsync<CedulaResponseDto>($"/{Model.Cedula}");
-    rucResponse = await rucClient.GetFromJsonAsync<RucResponseDto>($"/{Model.Cedula}001");
-
-    if (cedulaResponse is null)
+    catch (Exception ex)
     {
-      errorMessage = "Error: No se pudo obtener la información de la Cédula";
-      return;
+      throw;
     }
-
-    if (rucResponse is null)
-    {
-      errorMessage = "Error: No se pudo obtener la información del RUC";
-      return;
-    }
-
-    errorMessage = null;
   }
 }

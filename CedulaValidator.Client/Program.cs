@@ -9,17 +9,17 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddHttpClient(AppConstants.CEDULA_SERVICE_CLIENT, client =>
 {
-  client.BaseAddress = new Uri("https://localhost:7045/api/cedula");
+  client.BaseAddress = new Uri("https://localhost:7045/api/cedula/");
 });
 
 builder.Services.AddHttpClient(AppConstants.RUC_SERVICE_CLIENT, client =>
 {
-  client.BaseAddress = new Uri("https://localhost:7295/api/ruc");
+  client.BaseAddress = new Uri("https://localhost:7295/api/ruc/");
 });
 
 builder.Services.AddHttpClient(AppConstants.LICENCIA_SERVICE_CLIENT, client =>
 {
-  client.BaseAddress = new Uri("https://localhost:7152/api/licencia");
+  client.BaseAddress = new Uri("https://localhost:7152/api/licencia/");
 });
 
 var app = builder.Build();

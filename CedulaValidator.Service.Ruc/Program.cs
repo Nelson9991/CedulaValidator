@@ -4,6 +4,16 @@ using CedulaValidator.Service.Ruc.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowAll", builder =>
+  {
+    builder.AllowAnyOrigin()
+      .AllowAnyMethod()
+      .AllowAnyHeader();
+  });
+});
+
 builder.Services.AddHttpClient(AppConstants.RUC_HTTP_CLIENT, client =>
 {
   client.BaseAddress = new Uri("https://webservices.ec/api/ruc/");
@@ -12,6 +22,10 @@ builder.Services.AddHttpClient(AppConstants.RUC_HTTP_CLIENT, client =>
 });
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.AddRucEndpoints();
 
