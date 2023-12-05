@@ -4,8 +4,8 @@
 
 ## Diagrama C4 de Contexto
 
-![Diagrama C4 de Contexto](./out/docs/diagrama-context/Context.png)
+![Diagrama C4 de Contexto](./outs/docs/diagrama-context/Context.png)
 
 ## Diagrama C4 de Contenedores
 
-![Diagrama C4 de Contenedores](./out/docs/diagrama-contenedores/Contenedores.png)
+![Diagrama C4 de Contenedores](./outs/docs/diagrama-contenedores/Contenedores.png)
